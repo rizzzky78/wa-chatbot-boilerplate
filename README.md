@@ -45,9 +45,7 @@ $ npm install nodemon -g
 $ npm install -g pm2
 ```
 
-- Create a **Mongodb Atlas** account and **Clusters**, and then get the URIs, [See at Youtube](https://www.youtube.com/results?search_query=how+to+create+mongodb+atlas+account)
-- Create a [Raja Ongkir](https://rajaongkir.com/) account and then get the **APIKEY**
-- Open `.ENV file` in root aplication, heres the ENV fields look like
+- Create and open `.env` file in root aplication, heres the ENV fields look like
 
 ```env
 META_SESSION_NAME = Chatbot
@@ -97,16 +95,39 @@ $ node app.js
 
 The production run mode by default using cron restart interval set to 4 hours.
 
-Or, you can modify the app name and restart interval in `package.json`.
+Or, you can modify the app name and restart interval in `ecosystem.config.js`.
 
-Cronjob `--cron-restart=\"0 */4 * * *\"` is set to 4 hours, you can modify the number in `package.json` at app root.
+```js
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, ".env") });
+
+module.exports = {
+  apps: [
+    {
+      name: "Chatbot",
+      script: "./app.js",
+      autorestart: true,
+      watch: false,
+      env: {
+        NODE_ENV: "production",
+      },
+      cron_restart: "0 */5 * * *", // Cron syntax for every 5 hours
+    },
+  ],
+};
+```
+
+Cronjob is set to 5 hours, you can modify the number in `ecosystem.config.js` at app root.
 
 ```json
-"scripts": {
-  "start": "node app.js --color",
-  "prod": "pm2 start app.js --name \"Hani\" --cron-restart=\"0 */4 * * *\" && pm2 log",
-  "dev": "nodemon app.js --color"
-},
+  "scripts": {
+    "start": "node app.js --color",
+    "production": "pm2 start ecosystem.config.js",
+    "dev": "nodemon app.js --color",
+    "delete-session": "node ./session/controllers/index.js",
+    "commit": "git add . && git commit -m \"minor revision\" && git push",
+    "pullrun": "git stash && git pull && node app"
+  },
 ```
 
 Using command to run in production mode, or by open `start production.sh` file in app root.
@@ -271,7 +292,6 @@ module.exports = {
     );
   },
 };
-
 ```
 
 ## End
